@@ -1,0 +1,7 @@
+[package]
+name = "kbfw"
+version = "0.1.0"
+edition = "2024"
+description = "ITE keyboard MCU firmware reader/flasher over hidraw (ASUS ROG)"
+repository = "https://github.com/fosfuchs/kbfw"
+authors = ["fosfuchs"]
