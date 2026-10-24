@@ -59,7 +59,7 @@ fn usage() {
     );
     println!("  dump [файл]             полный дамп 0x40000 байт (по умолчанию kbfw-dump.bin)");
     println!("  pull [файл] [--model X] выкачка прошивки в формате FGA (по умолчанию kbfw-fw.bin)");
-    println!("  flash <образ> [--dry] [--only 0x...,...] [--factory]");
+    println!("  flash <образ> [--dry] [--only 0x...,...] [--factory] [--no-erase]");
     println!("  verify <образ> [--factory]");
     println!();
     println!("работает, только когда контроллер в режиме загрузчика 048d:89db");
@@ -309,12 +309,14 @@ fn cmd_flash(args: &[String]) -> u8 {
     let mut fw_path: Option<PathBuf> = None;
     let mut dry = false;
     let mut factory = false;
+    let mut erase = true;
     let mut only: Option<Vec<u32>> = None;
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--dry" => dry = true,
             "--factory" => factory = true,
+            "--no-erase" => erase = false,
             "--only" => {
                 i += 1;
                 if i >= args.len() {
@@ -363,6 +365,15 @@ fn cmd_flash(args: &[String]) -> u8 {
         Ok(chip) => chip,
         Err(code) => return code,
     };
+    chip.set_erase(erase);
+    println!(
+        "стирание перед записью: {}",
+        if chip.erase_enabled() {
+            "вкл"
+        } else {
+            "выкл (--no-erase)"
+        }
+    );
     let sectors = match only {
         Some(list) => list,
         None => match scan_diff(&mut chip, &fw, factory) {
